@@ -1,8 +1,63 @@
 import type { Service, Area, Neighborhood, ProgrammaticPageData } from '../types';
 
 // Helper to pick a random item from an array, providing variety.
-// FIX: Removed an invalid constant declaration that was causing a syntax error. A string literal cannot be a variable name.
-const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+// Simple seeded random number generator
+const mulberry32 = (a: number) => {
+  return () => {
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+}
+
+// Convert string seed to number
+const cyrb128 = (str: string) => {
+  let h1 = 1779033703, h2 = 3144134277,
+    h3 = 1013904242, h4 = 2773480762;
+  for (let i = 0, k; i < str.length; i++) {
+    k = str.charCodeAt(i);
+    h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+    h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+    h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+    h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+  }
+  h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+  h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+  h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+  h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+  return (h1 ^ h2 ^ h3 ^ h4) >>> 0;
+}
+
+// Helper to pick a random item from an array using a seed
+const pickRandom = <T>(arr: T[], seed: string): T => {
+  const seedNum = cyrb128(seed);
+  const rand = mulberry32(seedNum);
+  // Warm up
+  rand();
+  // Use the random number to pick an index
+  // We use a specific sequence based on the array length to ensure "randomness" but consistency
+  // However, for simple picking, just using the next random float is enough if the seed is unique per call context.
+  // BUT, since we call pickRandom multiple times in the same function with the SAME seed (service+area),
+  // we need to vary the seed slightly for each call, OR pass a mutable random generator.
+  // To keep it stateless and simple, we will append a "context" string to the seed.
+  return arr[Math.floor(rand() * arr.length)];
+};
+
+// We need a way to generate a sequence of random choices from a single seed.
+// Let's create a class or closure for it.
+class SeededGenerator {
+  private rand: () => number;
+
+  constructor(seed: string) {
+    const seedNum = cyrb128(seed);
+    this.rand = mulberry32(seedNum);
+  }
+
+  pick<T>(arr: T[]): T {
+    return arr[Math.floor(this.rand() * arr.length)];
+  }
+}
 
 
 /**
@@ -10,6 +65,9 @@ const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length
  * This function creates unique-feeling, SEO-optimized content on the fly.
  */
 export function generateProgrammaticData(service: Service, area: Area): ProgrammaticPageData {
+  // Initialize seeded generator
+  // The seed is a combination of service and area to ensure consistency for this specific page
+  const generator = new SeededGenerator(`${service.slug}-${area.slug}`);
 
   // Expanded Spintax for page content
   const pageTitleTemplates = [
@@ -82,19 +140,19 @@ export function generateProgrammaticData(service: Service, area: Area): Programm
   if (service.detailsVariations && service.detailsVariations.length > 0) {
     // Add the default details to the pool of options
     const allOptions = [service.details, ...service.detailsVariations];
-    selectedDetails = pickRandom(allOptions);
+    selectedDetails = generator.pick(allOptions);
   }
 
   return {
-    metaTitle: pickRandom(metaTitleTemplates),
-    metaDescription: pickRandom(metaDescriptionTemplates),
-    pageTitle: pickRandom(pageTitleTemplates),
-    pageDescription: pickRandom(pageDescriptionTemplates),
+    metaTitle: generator.pick(metaTitleTemplates),
+    metaDescription: generator.pick(metaDescriptionTemplates),
+    pageTitle: generator.pick(pageTitleTemplates),
+    pageDescription: generator.pick(pageDescriptionTemplates),
     details: [
-      pickRandom(introTemplates),
+      generator.pick(introTemplates),
       ...selectedDetails,
-      pickRandom(landmarkTemplates),
-      pickRandom(outroTemplates)
+      generator.pick(landmarkTemplates),
+      generator.pick(outroTemplates)
     ],
     faqs: [
       {
@@ -121,6 +179,8 @@ export function generateProgrammaticData(service: Service, area: Area): Programm
  * Generates even more specific programmatic SEO content for a service within a particular neighborhood.
  */
 export function generateNeighborhoodProgrammaticData(service: Service, area: Area, neighborhood: Neighborhood): ProgrammaticPageData {
+  // Initialize seeded generator
+  const generator = new SeededGenerator(`${service.slug}-${area.slug}-${neighborhood.slug}`);
 
   // Spintax for hyper-local meta content
   const metaTitleTemplates = [
@@ -136,8 +196,8 @@ export function generateNeighborhoodProgrammaticData(service: Service, area: Are
   ];
 
   return {
-    metaTitle: pickRandom(metaTitleTemplates),
-    metaDescription: pickRandom(metaDescriptionTemplates),
+    metaTitle: generator.pick(metaTitleTemplates),
+    metaDescription: generator.pick(metaDescriptionTemplates),
     pageTitle: `${service.title} Services in ${neighborhood.name}`,
     pageDescription: `Your dedicated local specialists for professional ${service.title.toLowerCase()}, proudly serving the ${neighborhood.name} community in ${area.name}.`,
     details: [

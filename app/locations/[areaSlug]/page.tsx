@@ -5,6 +5,7 @@ import { areasData, servicesData } from '@/data';
 import Contact from '@/components/Contact';
 import { Metadata } from 'next';
 import InteractiveMap from '@/components/InteractiveMapClient';
+import LocationSchema from '@/components/LocationSchema';
 
 interface PageProps {
     params: Promise<{
@@ -44,6 +45,13 @@ export default async function LocationPage({ params }: PageProps) {
 
     return (
         <>
+            <LocationSchema
+                name={area.name}
+                description={area.description}
+                url={`https://tidyfix.services/locations/${area.slug}`}
+                latitude={area.lat}
+                longitude={area.lng}
+            />
             <section className="pt-32 pb-20 bg-slate-50">
                 <div className="container mx-auto px-6 text-center">
                     <h1 className="text-4xl md:text-5xl font-bold text-slate-900">Services in {area.name}</h1>
@@ -96,3 +104,4 @@ export default async function LocationPage({ params }: PageProps) {
         </>
     );
 }
+

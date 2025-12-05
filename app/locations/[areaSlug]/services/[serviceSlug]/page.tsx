@@ -59,7 +59,7 @@ export default async function LocationServicePage({ params }: PageProps) {
 
     return (
         <>
-            <ServiceSchema name={service.title} description={content.pageDescription} />
+            <ServiceSchema name={service.title} description={content.pageDescription} areaServed={area.name} />
             <section className="pt-32 pb-20 bg-slate-50">
                 <div className="container mx-auto px-6 text-center">
                     <div className="flex justify-center items-center mb-6">{service.icon}</div>
