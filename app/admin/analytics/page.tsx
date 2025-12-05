@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { BarChart3, TrendingUp, Users, Calendar, Target, Percent, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import type { Lead } from '@prisma/client';
 
 async function getAnalyticsData() {
     const leads = await prisma.lead.findMany({
@@ -9,35 +10,29 @@ async function getAnalyticsData() {
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-
-    // This month's leads
-    const thisMonthLeads = leads.filter(l => new Date(l.createdAt) >= thisMonth);
-    const lastMonthLeads = leads.filter(l =>
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);    // This month's leads
+    const thisMonthLeads = leads.filter((l: Lead) => new Date(l.createdAt) >= thisMonth);
+    const lastMonthLeads = leads.filter((l: Lead) =>
         new Date(l.createdAt) >= lastMonth && new Date(l.createdAt) <= lastMonthEnd
     );
 
     // Calculate growth
     const growthRate = lastMonthLeads.length > 0
         ? ((thisMonthLeads.length - lastMonthLeads.length) / lastMonthLeads.length * 100).toFixed(1)
-        : thisMonthLeads.length > 0 ? 100 : 0;
-
-    // Status breakdown
+        : thisMonthLeads.length > 0 ? 100 : 0;    // Status breakdown
     const statusCounts = {
-        NEW: leads.filter(l => l.status === 'NEW').length,
-        CONTACTED: leads.filter(l => l.status === 'CONTACTED').length,
-        CLOSED: leads.filter(l => l.status === 'CLOSED').length,
+        NEW: leads.filter((l: Lead) => l.status === 'NEW').length,
+        CONTACTED: leads.filter((l: Lead) => l.status === 'CONTACTED').length,
+        CLOSED: leads.filter((l: Lead) => l.status === 'CLOSED').length,
     };
 
     // Conversion rate (closed / total)
     const conversionRate = leads.length > 0
         ? ((statusCounts.CLOSED / leads.length) * 100).toFixed(1)
-        : 0;
-
-    // Source breakdown
+        : 0;    // Source breakdown
     const sourceCounts = {
-        CONTACT_FORM: leads.filter(l => l.source === 'CONTACT_FORM').length,
-        QUOTE_FUNNEL: leads.filter(l => l.source === 'QUOTE_FUNNEL').length,
+        CONTACT_FORM: leads.filter((l: Lead) => l.source === 'CONTACT_FORM').length,
+        QUOTE_FUNNEL: leads.filter((l: Lead) => l.source === 'QUOTE_FUNNEL').length,
     };
 
     // Leads by day (last 7 days)
@@ -45,16 +40,12 @@ async function getAnalyticsData() {
         const date = new Date();
         date.setDate(date.getDate() - (6 - i));
         return date.toISOString().split('T')[0];
-    });
-
-    const leadsByDay = last7Days.map(day => ({
+    });    const leadsByDay = last7Days.map(day => ({
         date: day,
-        count: leads.filter(l => l.createdAt.toISOString().split('T')[0] === day).length,
-    }));
-
-    // Top services
+        count: leads.filter((l: Lead) => l.createdAt.toISOString().split('T')[0] === day).length,
+    }));    // Top services
     const serviceMap = new Map<string, number>();
-    leads.forEach(l => {
+    leads.forEach((l: Lead) => {
         if (l.service) {
             serviceMap.set(l.service, (serviceMap.get(l.service) || 0) + 1);
         }
