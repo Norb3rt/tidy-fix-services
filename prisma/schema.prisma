@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  name      String
+  email     String
+  phone     String
+  service   String?
+  location  String?
+  message   String?
+  
+  status    String   @default("NEW") // NEW, CONTACTED, CLOSED
+  source    String   @default("CONTACT_FORM") // CONTACT_FORM, QUOTE_FUNNEL
+  
+  // Store additional details as a JSON string or separate fields
+  details   String?  // JSON string for flexibility (frequency, squareFeet, etc.)
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
