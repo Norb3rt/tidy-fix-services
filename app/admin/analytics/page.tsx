@@ -9,8 +9,9 @@ async function getAnalyticsData() {
 
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);    // This month's leads
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    
+    // This month's leads
     const thisMonthLeads = leads.filter((l: Lead) => new Date(l.createdAt) >= thisMonth);
     const lastMonthLeads = leads.filter((l: Lead) =>
         new Date(l.createdAt) >= lastMonth && new Date(l.createdAt) <= lastMonthEnd
@@ -18,8 +19,9 @@ async function getAnalyticsData() {
 
     // Calculate growth
     const growthRate = lastMonthLeads.length > 0
-        ? ((thisMonthLeads.length - lastMonthLeads.length) / lastMonthLeads.length * 100).toFixed(1)
-        : thisMonthLeads.length > 0 ? 100 : 0;    // Status breakdown
+        ? ((thisMonthLeads.length - lastMonthLeads.length) / lastMonthLeads.length * 100).toFixed(1)        : thisMonthLeads.length > 0 ? 100 : 0;
+    
+    // Status breakdown
     const statusCounts = {
         NEW: leads.filter((l: Lead) => l.status === 'NEW').length,
         CONTACTED: leads.filter((l: Lead) => l.status === 'CONTACTED').length,
@@ -27,9 +29,10 @@ async function getAnalyticsData() {
     };
 
     // Conversion rate (closed / total)
-    const conversionRate = leads.length > 0
-        ? ((statusCounts.CLOSED / leads.length) * 100).toFixed(1)
-        : 0;    // Source breakdown
+    const conversionRate = leads.length > 0        ? ((statusCounts.CLOSED / leads.length) * 100).toFixed(1)
+        : 0;
+    
+    // Source breakdown
     const sourceCounts = {
         CONTACT_FORM: leads.filter((l: Lead) => l.source === 'CONTACT_FORM').length,
         QUOTE_FUNNEL: leads.filter((l: Lead) => l.source === 'QUOTE_FUNNEL').length,
@@ -38,12 +41,15 @@ async function getAnalyticsData() {
     // Leads by day (last 7 days)
     const last7Days = Array.from({ length: 7 }, (_, i) => {
         const date = new Date();
-        date.setDate(date.getDate() - (6 - i));
-        return date.toISOString().split('T')[0];
-    });    const leadsByDay = last7Days.map(day => ({
+        date.setDate(date.getDate() - (6 - i));        return date.toISOString().split('T')[0];
+    });
+    
+    const leadsByDay = last7Days.map(day => ({
         date: day,
         count: leads.filter((l: Lead) => l.createdAt.toISOString().split('T')[0] === day).length,
-    }));    // Top services
+    }));
+    
+    // Top services
     const serviceMap = new Map<string, number>();
     leads.forEach((l: Lead) => {
         if (l.service) {
