@@ -19,6 +19,7 @@ const SchemaInjector: React.FC = () => {
       "description": "Your local expert for top-rated cleaning, handyman, drywall repair, and painting services in Raleigh, Durham, and Chapel Hill.",
       "url": baseUrl,
       "image": `${baseUrl}/logo.png`,
+      "logo": `${baseUrl}/logo.png`,
       "telephone": "+1-984-212-4247",
       "address": {
         "@type": "PostalAddress",

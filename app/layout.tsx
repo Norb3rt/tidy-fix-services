@@ -19,6 +19,11 @@ export const metadata: Metadata = {
     description: "Professional handyman, cleaning, and drywall services in Raleigh-Durham. Licensed, insured, and satisfaction guaranteed. Get your free quote today with 2-hour response time.",
     keywords: ["handyman Raleigh", "cleaning services Durham", "drywall repair", "home services Raleigh-Durham", "residential cleaning", "commercial cleaning", "handyman services"],
     authors: [{ name: "Tidy & Fix Services" }],
+    icons: {
+        icon: "/favicon-32x32.png",
+        shortcut: "/favicon-32x32.png",
+        apple: "/favicon-32x32.png",
+    },
     openGraph: {
         title: "Tidy & Fix | Professional Home Services in Raleigh-Durham",
         description: "Professional cleaning, handyman, and drywall services. Licensed, insured, and satisfaction guaranteed. 2-hour response time.",
@@ -26,11 +31,20 @@ export const metadata: Metadata = {
         siteName: "Tidy & Fix",
         locale: "en_US",
         type: "website",
+        images: [
+            {
+                url: "https://tidyfix.services/logo.png",
+                width: 800,
+                height: 600,
+                alt: "Tidy & Fix Services Logo",
+            },
+        ],
     },
     twitter: {
         card: "summary_large_image",
         title: "Tidy & Fix | Professional Home Services",
         description: "Get your free quote from Tidy & Fix. Professional service guaranteed with 2-hour response time.",
+        images: ["https://tidyfix.services/logo.png"],
     },
     robots: {
         index: true,
